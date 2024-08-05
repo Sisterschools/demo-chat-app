@@ -22,6 +22,11 @@
 
         peer.on('open', (id) => {
           console.log('My peer ID is: ' + id);
+          conn = peer.connect("teacher");
+          conn.on("data", (data) => {
+            console.log("Received data", data);
+            conn.send("I'd like to join the chat");
+          });
         });
 
         peer.on('error', (error) => {
