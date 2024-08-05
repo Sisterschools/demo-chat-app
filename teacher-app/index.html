@@ -20,8 +20,7 @@ function logLine( str, obj ){
 // I could not get this done by IPC or someting
 fetch('http://blueberry.local:1024')
 .then( res => res.json())
-.then( ( ip ) => {
-    var data = JSON.parse(ip)
+.then( ( data ) => {
     const peer = new Peer('teacher', {
         host: data.ip,
         port: 9000,

@@ -8,9 +8,8 @@
       fetch('http://blueberry.local:1024')
       .then( ( res ) => res.json())
       .then( ( data ) => {
-        let ip = JSON.parse(data)
         const peer = new Peer("someid", {
-          host: ip.ip,
+          host: data.ip,
           port: 9000,
           path: "/myapp",
         });
