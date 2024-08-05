@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+    <body>
+        Teacher app started 
+    </body>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script>
+function logLine( str, obj ){
+    var el = document.createElement('div')
+    el.appendChild( document.createTextNode( str ))
+    document.body.appendChild(el)
+    if( obj )
+        console.log( "got: ", obj )
+}
+
+const peer = new Peer('teacher', {
+  host: "localhost",
+  port: 9000,
+  path: "/myapp",
+  url:'testsome'
+});
+
+peer.on('open', (id) => {
+    logLine('My peer ID is: ' + id);
+});
+
+// Accept incoming request to join the chat
+peer.on('connection', function(con){
+  con.on('data', function(data){
+    logLine('Incoming data: ' + data);
+  });
+  con.on("open", () => {
+    con.send("Welcome to the chat");
+  });
+  con.on("error", (obj) => {
+    con.send("Error", obj);
+  });
+  con.on('close', (id) => {
+    logLine('Left: ' + id);
+  });
+});
+
+peer.on('connection', ( obj ) => {
+  logLine( "Pupil joined the chat:" + obj.peer, obj)
+  peer.on('disconnected', (id) => {
+    logLine('Left2: ' + id);
+  });
+  peer.on("error", (obj) => {
+    logLine("Error", obj);
+  });
+})
+peer.on('connect', console.log)
+peer.on('message', console.log)
+
+</script>
+</html>

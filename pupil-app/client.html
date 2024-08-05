@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+      <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+      <script>
+      
+      // get ip of teacher from MoMo server app
+      fetch('http://blueberry.local:1024')
+      .then( ( res ) => res.json())
+      .then( ( data ) => {
+        let ip = JSON.parse(data)
+        const peer = new Peer("someid", {
+          host: ip.ip,
+          port: 9000,
+          path: "/myapp",
+        });
+
+        peer.on('connection', console.log)
+        peer.on('connect', console.log)
+        peer.on('data', console.log)
+        peer.on('message', console.log)
+
+        peer.on('open', (id) => {
+          console.log('My peer ID is: ' + id);
+        });
+
+        peer.on('error', (error) => {
+          console.error(error);
+        });
+
+        console.log(peer)
+      })
+        </script>
+    </head>
+</html>

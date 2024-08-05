@@ -1,0 +1,22 @@
+{
+  "name": "electron_app",
+  "version": "1.0.0",
+  "description": "Teacher app for MoMo",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "Pieter Hoekstra",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.3.1"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ip": "^2.0.1",
+    "node-fetch": "^3.3.2",
+    "peer": "^1.0.2",
+    "ws": "^8.18.0"
+  }
+}
