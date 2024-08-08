@@ -5,21 +5,18 @@
         a.connected{
           color:indigo
         }
+        a.connected::before{
+          content: ' => ';
+        }
       </style>
       <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
       <script>
       var serverURL = '',
+        port = 9000,
         peer = null,
         myId = '',
         reqId = '',
-        connected = [];
-
-      function addConnection( con ){
-        if( ! connected.find( ( a ) => a.peer == con.peer ))
-          connected.push(con)
-      }
-
-
+        connected = new Map();
 
       function syncPeopleOnline(){
         fetch( serverURL + '/peer-server/peerjs/peers')
@@ -36,30 +33,25 @@
 
               ppl.addEventListener( 'click', ( el ) => {
                 var person = el.target.getAttribute('data-person'),
-                  con = peer._connections.get( person )
+                  con = connected.get( person )
 
-                if( con && con[0] ){
-
-                  let _con = connected.find( ( a ) => a.peer == person)
-                  if(_con)
-                    _con.send('#close' )
-
-                  con[0].dataChannel.close()
-                  connected.splice( connected.findIndex( ( a ) => a.peer == person), 1)
+                if( con ){
+                  con.send('#close' )
+                  con.dataChannel.close()
+                  connected.delete( id )
                 }
                 else{
                   let con = peer.connect( person );
                   con.on("data", (data) => {
-                    if( data.indexOf('#close') == 0){
-                      connected.splice( connected.findIndex( ( a ) => a.peer == con.peer ), 1)
-                    }
+                    if( data.indexOf('#close') == 0)
+                      connected.delete( con.peer )
                     else
-                      addConnection( con )
+                      connected.set( con.peer, con )  
                   });
                 }
               })
 
-              if( connected.length > 0 && connected.find( ( a ) => a.peer == id ) && ! ppl.classList.contains('connected'))
+              if( connected.get( id ) && ! ppl.classList.contains('connected'))
                 ppl.classList.add('connected')
               else
                 ppl.classList.remove('connected')
@@ -75,10 +67,10 @@
         fetch('http://blueberry.local:1024')
         .then( ( res ) => res.json())
         .then( ( data ) => {
-          serverURL = 'http://' + data.ip + ':9000'
+          serverURL = 'http://' + data.ip + ':' + port
           peer = new Peer(reqId + '_' + (Math.random().toString(36) + '000000').substr(2, 4), {
             host: data.ip,
-            port: 9000,
+            port: port,
             path: "/peer-server",
           });
 
@@ -86,11 +78,11 @@
             con.on("open", ( id ) => {
               con.send( "[" + myId + "] Hi " + con.peer);
               console.log( "Connection w/ : ", con.peer)
-              addConnection( con )
+              connected.set( con.peer, con ) 
             });
             con.on("data", ( data ) => {
               if( data.indexOf('#close') == 0)
-                connected.splice( connected.findIndex( ( a ) => a.peer == con.peer ), 1)
+                connected.delete( id )
             })
           })
           peer.on('connect', console.log)
@@ -99,7 +91,7 @@
 
           peer.on('disconnected', () => {
             console.log(peer)
-            connected = []
+            connected = new Map()
           })
 
           peer.on('open', (id) => {
