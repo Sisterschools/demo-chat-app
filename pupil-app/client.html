@@ -28,7 +28,7 @@
               ppl.appendChild(document.createTextNode( id ))
               ppl.addEventListener( 'click', ( el ) => {
                 var person = el.target.getAttribute('data-person')
-                if( connected.find( ( a ) => a.person == id) ){
+                if( connected.find( ( a ) => a.person == person) ){
                   let con = connected.find( ( a ) => a.person == person)
                   
                   // con.close() ?
