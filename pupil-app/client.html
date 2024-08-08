@@ -1,39 +1,93 @@
 <!doctype html>
 <html>
     <head>
+      <style type="text/css">
+        a.connected{
+          color:indigo
+        }
+      </style>
       <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
       <script>
+      var serverURL = '',
+        peer = null,
+        myId = '',
+        reqId = '',
+        connected = '';
+
+      function syncPeopleOnline(){
+        fetch( serverURL + '/peer-server/peerjs/peers')
+        .then( res => res.json())
+        .then( ( data ) => {
+          document.body.replaceChildren( document.createElement( 'div' ))
+          data.forEach( ( id ) => {
+            if( id != myId ){
+              var el = document.createElement( 'div' ),
+                ppl = document.createElement( 'a' )
+              ppl.setAttribute('href', 'javascript:void(0)')
+              ppl.setAttribute( 'data-person', id )
+              ppl.appendChild(document.createTextNode( id ))
+              ppl.addEventListener( 'click', ( el ) => {
+                var person = el.target.getAttribute('data-person')
+                conn = peer.connect( person );
+                conn.on("data", (data) => {
+                  alert(data);
+                  connected = person
+                });
+              } )
+              if(id == connected && ! ppl.classList.contains('connected'))
+                ppl.classList.add('connected')
+              else
+                ppl.classList.remove('connected')
+              el.appendChild( ppl )
+              document.body.appendChild( el )
+            }
+          })
+        })
+      }
       
-      // get ip of teacher from MoMo server app
-      fetch('http://blueberry.local:1024')
-      .then( ( res ) => res.json())
-      .then( ( data ) => {
-        const peer = new Peer("someid", {
-          host: data.ip,
-          port: 9000,
-          path: "/myapp",
-        });
 
-        peer.on('connection', console.log)
-        peer.on('connect', console.log)
-        peer.on('data', console.log)
-        peer.on('message', console.log)
-
-        peer.on('open', (id) => {
-          console.log('My peer ID is: ' + id);
-          conn = peer.connect("teacher");
-          conn.on("data", (data) => {
-            console.log("Received data", data);
-            conn.send("I'd like to join the chat");
+      if( reqId = prompt( 'What is your name?' )){
+        // get ip of teacher from MoMo server app
+        fetch('http://blueberry.local:1024')
+        .then( ( res ) => res.json())
+        .then( ( data ) => {
+          serverURL = 'http://' + data.ip + ':9000'
+          peer = new Peer(reqId + '_' + (Math.random().toString(36)).substr(2, 4), {
+            host: data.ip,
+            port: 9000,
+            path: "/peer-server",
           });
-        });
 
-        peer.on('error', (error) => {
-          console.error(error);
-        });
+          peer.on('connection', ( con ) => {
+            con.on("open", ( id ) => {
+              con.send("Hi");
+              console.log( "Connection w/ : ", con.peer)
+              connected = con.peer
+            });
+          })
+          peer.on('connect', console.log)
+          peer.on('data', console.log)
+          peer.on('message', console.log)
 
-        console.log(peer)
-      })
+          peer.on('disconnected', () => {
+            connected = ''
+          })
+
+          peer.on('open', (id) => {
+            myId = id
+            console.log('My peer ID is: ' + id);
+          });
+
+          peer.on('error', (error) => {
+            console.error(error);
+          });
+
+          console.log(peer)
+        })
+        .then( () => {
+          setInterval( syncPeopleOnline, 500 )
+        }) 
+      }
         </script>
     </head>
 </html>

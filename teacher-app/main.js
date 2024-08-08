@@ -1,8 +1,7 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, contextBridge, ipcRenderer } = require('electron')
 const { PeerServer } = require("peer");
 
 var ip = require("ip");
-console.log ( ip.address() );
 
 async function log2server(){
     const response = await fetch(
@@ -31,7 +30,13 @@ const createWindow = () => {
 
   log2server();
 
-  const peer = PeerServer(/* listener,  */{ host: ip.address(), port: 9000, path: "/myapp" });
+  const peer = PeerServer(/* listener,  */{ 
+        host: ip.address(), 
+        port: 9000, 
+        path: "/peer-server",
+        key: 'peerjs',
+        allow_discovery: true,
+    });
 
   //peer.on("connection", console.log)
   peer.on("connection", (obj) => { console.log( obj.id )})

@@ -21,10 +21,11 @@ function logLine( str, obj ){
 fetch('http://blueberry.local:1024')
 .then( res => res.json())
 .then( ( data ) => {
-    const peer = new Peer('teacher', {
+    const peer = new Peer('teacher_' + (Math.random().toString(36)).substr(2, 4), {
         host: data.ip,
         port: 9000,
-        path: "/myapp",
+        path: "/peer-server",
+        key: 'peerjs',
         url:'testsome'
         });
 
@@ -34,18 +35,18 @@ fetch('http://blueberry.local:1024')
 
         // Accept incoming request to join the chat
         peer.on('connection', function(con){
-        con.on('data', function(data){
-            logLine('Incoming data: ' + data);
-        });
-        con.on("open", () => {
-            con.send("Welcome to the chat");
-        });
-        con.on("error", (obj) => {
-            con.send("Error", obj);
-        });
-        con.on('close', (id) => {
-            logLine('Left: ' + id);
-        });
+            con.on('data', function(data){
+                logLine('Incoming data: ' + data);
+            });
+            con.on("open", () => {
+                con.send("Welcome to the chat");
+            });
+            con.on("error", (obj) => {
+                con.send("Error", obj);
+            });
+            con.on('close', (id) => {
+                logLine('Left: ' + id);
+            });
         });
 
         peer.on('connection', ( obj ) => {
