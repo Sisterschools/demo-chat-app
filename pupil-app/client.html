@@ -12,7 +12,7 @@
         peer = null,
         myId = '',
         reqId = '',
-        connected = '';
+        connected = [];
 
       function syncPeopleOnline(){
         fetch( serverURL + '/peer-server/peerjs/peers')
@@ -31,10 +31,10 @@
                 conn = peer.connect( person );
                 conn.on("data", (data) => {
                   alert(data);
-                  connected = person
+                  connected.push(person)
                 });
               } )
-              if(id == connected && ! ppl.classList.contains('connected'))
+              if( connected.length > 0 && connected.indexOf( id ) > -1 && ! ppl.classList.contains('connected'))
                 ppl.classList.add('connected')
               else
                 ppl.classList.remove('connected')
@@ -52,7 +52,7 @@
         .then( ( res ) => res.json())
         .then( ( data ) => {
           serverURL = 'http://' + data.ip + ':9000'
-          peer = new Peer(reqId + '_' + (Math.random().toString(36)).substr(2, 4), {
+          peer = new Peer(reqId + '_' + (Math.random().toString(36) + '000000').substr(2, 4), {
             host: data.ip,
             port: 9000,
             path: "/peer-server",
@@ -60,9 +60,9 @@
 
           peer.on('connection', ( con ) => {
             con.on("open", ( id ) => {
-              con.send("Hi");
+              con.send( "[" + myId + "] Hi " + con.peer);
               console.log( "Connection w/ : ", con.peer)
-              connected = con.peer
+              connected.push(con.peer)
             });
           })
           peer.on('connect', console.log)
@@ -70,7 +70,7 @@
           peer.on('message', console.log)
 
           peer.on('disconnected', () => {
-            connected = ''
+            connected = []
           })
 
           peer.on('open', (id) => {

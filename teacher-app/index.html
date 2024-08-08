@@ -21,7 +21,7 @@ function logLine( str, obj ){
 fetch('http://blueberry.local:1024')
 .then( res => res.json())
 .then( ( data ) => {
-    const peer = new Peer('teacher_' + (Math.random().toString(36)).substr(2, 4), {
+    const peer = new Peer('teacher_' + (Math.random().toString(36) + '000000').substr(2, 4), {
         host: data.ip,
         port: 9000,
         path: "/peer-server",
