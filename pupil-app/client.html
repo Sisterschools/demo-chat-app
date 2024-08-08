@@ -28,13 +28,25 @@
               ppl.appendChild(document.createTextNode( id ))
               ppl.addEventListener( 'click', ( el ) => {
                 var person = el.target.getAttribute('data-person')
-                conn = peer.connect( person );
-                conn.on("data", (data) => {
-                  alert(data);
-                  connected.push(person)
-                });
-              } )
-              if( connected.length > 0 && connected.indexOf( id ) > -1 && ! ppl.classList.contains('connected'))
+                if( connected.find( ( a ) => a.person == id) ){
+                  let con = connected.find( ( a ) => a.person == person)
+                  
+                  // con.close() ?
+                  console.log(con)
+                  con = null
+
+                  connected.splice( connected.findIndex( ( a ) => a.person == person), 1)
+                }
+                else{
+                  let con = peer.connect( person );
+                  con.on("data", (data) => {
+                    alert(data);
+                    connected.push({person, con})
+                  });
+                }
+              })
+
+              if( connected.length > 0 && connected.find( ( a ) => a.person == id ) && ! ppl.classList.contains('connected'))
                 ppl.classList.add('connected')
               else
                 ppl.classList.remove('connected')
@@ -62,7 +74,7 @@
             con.on("open", ( id ) => {
               con.send( "[" + myId + "] Hi " + con.peer);
               console.log( "Connection w/ : ", con.peer)
-              connected.push(con.peer)
+              connected.push({person: con.peer, con})
             });
           })
           peer.on('connect', console.log)
