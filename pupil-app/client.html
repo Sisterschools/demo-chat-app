@@ -14,6 +14,13 @@
         reqId = '',
         connected = [];
 
+      function addConnection( con ){
+        if( ! connected.find( ( a ) => a.peer == con.peer ))
+          connected.push(con)
+      }
+
+
+
       function syncPeopleOnline(){
         fetch( serverURL + '/peer-server/peerjs/peers')
         .then( res => res.json())
@@ -26,27 +33,33 @@
               ppl.setAttribute('href', 'javascript:void(0)')
               ppl.setAttribute( 'data-person', id )
               ppl.appendChild(document.createTextNode( id ))
-              ppl.addEventListener( 'click', ( el ) => {
-                var person = el.target.getAttribute('data-person')
-                if( connected.find( ( a ) => a.person == person) ){
-                  let con = connected.find( ( a ) => a.person == person)
-                  
-                  // con.close() ?
-                  console.log(con)
-                  con = null
 
-                  connected.splice( connected.findIndex( ( a ) => a.person == person), 1)
+              ppl.addEventListener( 'click', ( el ) => {
+                var person = el.target.getAttribute('data-person'),
+                  con = peer._connections.get( person )
+
+                if( con && con[0] ){
+
+                  let _con = connected.find( ( a ) => a.peer == person)
+                  if(_con)
+                    _con.send('#close' )
+
+                  con[0].dataChannel.close()
+                  connected.splice( connected.findIndex( ( a ) => a.peer == person), 1)
                 }
                 else{
                   let con = peer.connect( person );
                   con.on("data", (data) => {
-                    alert(data);
-                    connected.push({person, con})
+                    if( data.indexOf('#close') == 0){
+                      connected.splice( connected.findIndex( ( a ) => a.peer == con.peer ), 1)
+                    }
+                    else
+                      addConnection( con )
                   });
                 }
               })
 
-              if( connected.length > 0 && connected.find( ( a ) => a.person == id ) && ! ppl.classList.contains('connected'))
+              if( connected.length > 0 && connected.find( ( a ) => a.peer == id ) && ! ppl.classList.contains('connected'))
                 ppl.classList.add('connected')
               else
                 ppl.classList.remove('connected')
@@ -56,7 +69,6 @@
           })
         })
       }
-      
 
       if( reqId = prompt( 'What is your name?' )){
         // get ip of teacher from MoMo server app
@@ -74,14 +86,19 @@
             con.on("open", ( id ) => {
               con.send( "[" + myId + "] Hi " + con.peer);
               console.log( "Connection w/ : ", con.peer)
-              connected.push({person: con.peer, con})
+              addConnection( con )
             });
+            con.on("data", ( data ) => {
+              if( data.indexOf('#close') == 0)
+                connected.splice( connected.findIndex( ( a ) => a.peer == con.peer ), 1)
+            })
           })
           peer.on('connect', console.log)
           peer.on('data', console.log)
           peer.on('message', console.log)
 
           peer.on('disconnected', () => {
+            console.log(peer)
             connected = []
           })
 
@@ -100,6 +117,13 @@
           setInterval( syncPeopleOnline, 500 )
         }) 
       }
+
+      document.addEventListener( 'DOMContentLoaded', () => {
+        console.log(
+          peerjs.util.browser,
+          peerjs.util.supports
+        )
+      })
         </script>
     </head>
 </html>
