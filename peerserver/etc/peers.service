@@ -1,0 +1,14 @@
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
+Description=Weather service
+Wants=network-online.target
+After=network.online.target
+
+[Service]
+Environment=NODE_PORT=1080
+User=pi
+Group=pi
+ExecStart=/home/pi/.nvm/versions/node/v21.5.0/bin/node /home/pi/peers/index.js
+Type=simple
