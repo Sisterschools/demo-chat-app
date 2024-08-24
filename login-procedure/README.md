@@ -1,0 +1,4 @@
+- teacher logs in with username / password
+- all devices in the local network on the non-routable ip displaying the app change the screen into the meetingid dialog
+- after entering the right four digits of the meeting id the pupil sees enter-your-name dialog
+- the names of the participants are displayed with a blue background for people of class A and a green background for people of class B
